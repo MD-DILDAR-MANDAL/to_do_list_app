@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class Constants {
   final primaryColor = Color(0xFFDDF338);
-  final secondaryColor = Colors.yellowAccent;
+  final secondaryColor = Color.fromARGB(255, 236, 245, 168);
 
   final red1 = Color.fromARGB(255, 255, 236, 235);
   final red2 = Color(0xFFFC2E52);

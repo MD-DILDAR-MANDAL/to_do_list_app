@@ -4,6 +4,7 @@ import 'package:to_do_list_app/firebase_options.dart';
 import 'package:to_do_list_app/routes/routes.dart';
 import 'package:to_do_list_app/services/auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:to_do_list_app/services/task_services.dart';
 import 'package:to_do_list_app/services/user_services.dart';
 
 void main() async {
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
       providers: [
         Provider<Auth>(create: (_) => Auth()),
         Provider<FirestoreService>(create: (_) => FirestoreService()),
+        Provider<TaskService>(create: (_) => TaskService()),
       ],
       child: MaterialApp(
         title: 'Todo List',
