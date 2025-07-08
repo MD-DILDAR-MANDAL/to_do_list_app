@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:to_do_list_app/pages/loading_page.dart';
 import 'package:to_do_list_app/pages/login_page.dart';
 import 'package:to_do_list_app/pages/register_page.dart';
 import 'package:to_do_list_app/pages/task_page.dart';
 
 class RouteManager {
-  static const String loginPage = "/";
+  static const String loadingPage = "/";
+  static const String loginPage = "/loginPage";
   static const String registerPage = "/registerPage";
   static const String taskPage = "/taskPage";
+
   static Route<dynamic> generateRoute(RouteSettings settings) {
     var data;
     if (settings.arguments != null) {
@@ -19,6 +22,8 @@ class RouteManager {
         return MaterialPageRoute(builder: (context) => RegisterPage());
       case taskPage:
         return MaterialPageRoute(builder: (context) => TaskPage(data));
+      case loadingPage:
+        return MaterialPageRoute(builder: (context) => LoadingPage());
       default:
         throw FormatException("Route not found! Check routes again!");
     }

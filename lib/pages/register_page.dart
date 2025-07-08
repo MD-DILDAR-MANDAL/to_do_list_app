@@ -43,7 +43,7 @@ class _RegisterPageState extends State<RegisterPage> {
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
         ),
         foregroundColor: Colors.black,
-        backgroundColor: _constants.secondaryColor,
+        backgroundColor: _constants.primaryColor,
         centerTitle: true,
       ),
       body: Container(
@@ -53,7 +53,7 @@ class _RegisterPageState extends State<RegisterPage> {
             radius: 1.1,
             colors: <Color>[
               Colors.white, // yellow sun
-              _constants.secondaryColor, // blue sky
+              _constants.primaryColor, // blue sky
             ],
             stops: <double>[0.9, 0.7],
           ),
@@ -137,14 +137,13 @@ class _RegisterPageState extends State<RegisterPage> {
                   : ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       foregroundColor: Colors.black,
-                      backgroundColor: _constants.secondaryColor,
+                      backgroundColor: _constants.primaryColor,
                     ),
                     onPressed: () async {
                       FocusScope.of(context).unfocus();
                       setState(() {
                         isLoading = true;
                       });
-                      final isValid = _formkey.currentState!.validate();
 
                       try {
                         final value = await auth.handleSignUp(

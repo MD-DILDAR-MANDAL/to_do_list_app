@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:to_do_list_app/constants.dart';
 import 'package:to_do_list_app/models/task_model.dart';
 import 'package:to_do_list_app/routes/routes.dart';
@@ -74,8 +75,12 @@ class _TaskPageState extends State<TaskPage> {
             icon: Icon(Icons.add),
           ),
           IconButton(
-            onPressed: () {
+            onPressed: () async {
               auth.logout();
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+
+              await prefs.setString("userId", "");
+              await prefs.setBool("isLogin", false);
               Navigator.popAndPushNamed(context, RouteManager.loginPage);
             },
             icon: Icon(Icons.logout),
@@ -87,7 +92,7 @@ class _TaskPageState extends State<TaskPage> {
           stream: taskProvide.getTasks(currentUid),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return CircularProgressIndicator();
+              return Center(child: CircularProgressIndicator());
             }
             final tasks = snapshot.data!;
             return ListView.builder(

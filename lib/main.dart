@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Todo List',
-        initialRoute: RouteManager.loginPage,
+        initialRoute: RouteManager.loadingPage,
         onGenerateRoute: RouteManager.generateRoute,
       ),
     );

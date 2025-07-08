@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:to_do_list_app/constants.dart';
 import 'package:to_do_list_app/routes/routes.dart';
 import 'package:to_do_list_app/services/auth.dart';
@@ -38,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
           "Login",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
         ),
-        backgroundColor: _constants.secondaryColor,
+        backgroundColor: _constants.primaryColor,
         foregroundColor: Colors.black,
         automaticallyImplyLeading: false,
         centerTitle: true,
@@ -50,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
             radius: 1,
             colors: <Color>[
               Colors.white, // yellow sun
-              _constants.secondaryColor, // blue sky
+              _constants.primaryColor, // blue sky
             ],
             stops: <double>[0.9, 0.7],
           ),
@@ -110,12 +111,11 @@ class _LoginPageState extends State<LoginPage> {
                   ? CircularProgressIndicator()
                   : ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _constants.secondaryColor,
+                      backgroundColor: _constants.primaryColor,
                       foregroundColor: Colors.black,
                     ),
                     onPressed: () async {
                       FocusScope.of(context).unfocus();
-                      final isValid = _formkey.currentState!.validate();
                       setState(() {
                         isLoading = true;
                       });
@@ -125,10 +125,15 @@ class _LoginPageState extends State<LoginPage> {
                           _emailController.text,
                           _passwordController.text,
                         );
+                        final SharedPreferences prefs =
+                            await SharedPreferences.getInstance();
+                        await prefs.setString('userId', value!.uid);
+                        await prefs.setBool("isLogin", true);
+
                         Navigator.popAndPushNamed(
                           context,
                           RouteManager.taskPage,
-                          arguments: value!.uid,
+                          arguments: value.uid,
                         );
                       } on FirebaseAuthException catch (e) {
                         String msg = "Login Failed";

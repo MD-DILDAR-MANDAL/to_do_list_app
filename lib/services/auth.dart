@@ -6,7 +6,6 @@ class Auth {
 
   User? _firebaseUser(auth.User? user) {
     if (user == null) {
-      print("server issue");
       return null;
     }
     return User(user.uid, user.email);
