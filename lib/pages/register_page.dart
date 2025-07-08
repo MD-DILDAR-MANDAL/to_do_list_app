@@ -2,18 +2,21 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_list_app/constants.dart';
+import 'package:to_do_list_app/models/app_user.dart';
 import 'package:to_do_list_app/routes/routes.dart';
 import 'package:to_do_list_app/services/auth.dart';
+import 'package:to_do_list_app/services/user_services.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final Constants _constants = Constants();
+  final _userController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
@@ -21,33 +24,33 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
+    super.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<Auth>(context);
+    final fireStore = Provider.of<FirestoreService>(context);
+
+    var currentUid;
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(
-          "Login",
+          "Register",
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
         ),
-        backgroundColor: _constants.secondaryColor,
         foregroundColor: Colors.black,
-        automaticallyImplyLeading: false,
+        backgroundColor: _constants.secondaryColor,
         centerTitle: true,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: RadialGradient(
-            center: Alignment(-0.3, 0.3), // near the top right
-            radius: 1,
+            center: Alignment(0.3, 0.3), // near the top right
+            radius: 1.1,
             colors: <Color>[
               Colors.white, // yellow sun
               _constants.secondaryColor, // blue sky
@@ -55,6 +58,7 @@ class _LoginPageState extends State<LoginPage> {
             stops: <double>[0.9, 0.7],
           ),
         ),
+
         child: Form(
           key: _formkey,
           child: Column(
@@ -64,7 +68,29 @@ class _LoginPageState extends State<LoginPage> {
                 padding: const EdgeInsets.fromLTRB(30.0, 0, 30.0, 10.0),
                 child: TextFormField(
                   decoration: InputDecoration(
-                    labelText: "email",
+                    labelText: "Username",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusColor: _constants.secondaryColor,
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (String? value) {
+                    if (value == null || value.isEmpty) {
+                      return "username is required !";
+                    }
+                    return null;
+                  },
+                  controller: _userController,
+                  style: TextStyle(color: Colors.black),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(30.0, 0, 30.0, 10.0),
+                child: TextFormField(
+                  decoration: InputDecoration(
+                    labelText: "Email",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -87,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: TextFormField(
                   obscureText: true,
                   decoration: InputDecoration(
-                    labelText: "password",
+                    labelText: "Password",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -110,47 +136,58 @@ class _LoginPageState extends State<LoginPage> {
                   ? CircularProgressIndicator()
                   : ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _constants.secondaryColor,
                       foregroundColor: Colors.black,
+                      backgroundColor: _constants.secondaryColor,
                     ),
                     onPressed: () async {
                       FocusScope.of(context).unfocus();
-                      final isValid = _formkey.currentState!.validate();
                       setState(() {
                         isLoading = true;
                       });
+                      final isValid = _formkey.currentState!.validate();
 
                       try {
-                        final value = await auth.handleSignInEmail(
+                        final value = await auth.handleSignUp(
                           _emailController.text,
                           _passwordController.text,
                         );
+                        currentUid = value?.uid;
+
+                        fireStore.setUser(
+                          AppUser(
+                            id: currentUid,
+                            name: _userController.text,
+                            email: _emailController.text,
+                          ),
+                        );
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "Verification email sent! Please check your inbox.",
+                              style: TextStyle(color: Colors.black),
+                            ),
+                            backgroundColor: _constants.primaryColor,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+
                         Navigator.popAndPushNamed(
                           context,
-                          RouteManager.taskPage,
-                          arguments: value!.uid,
+                          RouteManager.loginPage,
                         );
                       } on FirebaseAuthException catch (e) {
-                        String msg = "Login Failed";
-
-                        if (e.code == 'user-not-found') {
-                          msg = "user not registered";
-                        } else if (e.code == 'wrong-password') {
-                          msg = "email or password is incorrect";
+                        String msg = "registration failed";
+                        if (e.code == 'email-already-in-use') {
+                          msg = "Email is already in use";
+                        } else if (e.code == 'invalid-email') {
+                          msg = "Invalid email format";
                         } else {
                           msg = e.message ?? msg;
                         }
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(msg),
-                            backgroundColor: _constants.red2,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(e.toString()),
                             backgroundColor: _constants.red2,
                             behavior: SnackBarBehavior.floating,
                           ),
@@ -163,15 +200,8 @@ class _LoginPageState extends State<LoginPage> {
                         }
                       }
                     },
-                    child: Text("Login", style: TextStyle(fontSize: 20)),
+                    child: Text("connect", style: TextStyle(fontSize: 20)),
                   ),
-              TextButton(
-                onPressed: () {
-                  FocusScope.of(context).unfocus();
-                  Navigator.pushNamed(context, RouteManager.registerPage);
-                },
-                child: Text("Don't have an account?"),
-              ),
             ],
           ),
         ),
